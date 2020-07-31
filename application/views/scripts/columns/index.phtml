@@ -1,0 +1,70 @@
+<?php /* vola: Icinga Director random import | (c) 2020 Icinga GmbH | GPLv2+ */ ?>
+<?php if (! $this->compact): ?>
+<div class="controls">
+    <?= $this->tabs ?>
+    <?= $this->paginator ?>
+    <div class="sort-controls-container">
+        <?= $this->limiter ?>
+        <?= $this->sortBox ?>
+    </div>
+    <?= $this->filterEditor ?>
+</div>
+<?php endif ?>
+<div class="content">
+<?php if ($this->hasPermission('config/modules')) {
+    echo $this->qlink(
+        $this->translate('Create a New Column'),
+        'vola/columns/new',
+        null,
+        [
+            'class'             => 'button-link',
+            'data-base-target'  => '_next',
+            'icon'              => 'plus',
+            'title'             => $this->translate('Create a new column')
+        ]
+    );
+} ?>
+<?php if (empty($this->columns)): ?>
+    <p><?= $this->translate('No columns found.') ?></p>
+</div>
+<?php return; endif ?>
+    <table data-base-target="_next" class="table-row-selectable common-table">
+        <thead>
+            <tr>
+                <th><?= $this->translate('Name') ?></th>
+                <th><?= $this->translate('Pattern') ?></th>
+            <?php if ($this->hasPermission('config/modules')): ?>
+                <th></th>
+            <?php endif ?>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($this->columns as $column): /** @var stdClass $column */ ?>
+            <tr>
+            <?php if ($this->hasPermission('config/modules')): ?>
+                <td>
+                    <a href="<?= $this->href('vola/columns/update', ['name' => $column->name]) ?>"><?=
+                        $this->escape($column->name)
+                    ?></a>
+                </td>
+            <?php else: ?>
+                <td><?= $this->escape($column->name) ?></td>
+            <?php endif ?>
+                <td><?= $this->escape($column->pattern) ?></td>
+            <?php if ($this->hasPermission('config/modules')): ?>
+                <td class="icon-col"><?= $this->qlink(
+                    null,
+                    'vola/columns/remove',
+                    ['name' => $column->name],
+                    [
+                        'class' => 'action-link',
+                        'icon'  => 'cancel',
+                        'title' => $this->translate('Remove this column')
+                    ]
+                ) ?></td>
+            <?php endif ?>
+            </tr>
+        <?php endforeach ?>
+        </tbody>
+    </table>
+</div>
