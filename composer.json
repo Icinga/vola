@@ -1,0 +1,12 @@
+{
+    "name": "icinga/vola",
+    "license": "GPL-2.0-or-later",
+    "config": {
+        "platform": {
+            "php": "5.6.0"
+        }
+    },
+    "require": {
+        "icomefromthenet/reverse-regex": "v0.0.6.3"
+    }
+}
