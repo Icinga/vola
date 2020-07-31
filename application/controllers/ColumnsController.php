@@ -3,7 +3,9 @@
 
 namespace Icinga\Module\Vola\Controllers;
 
+use Icinga\Exception\NotFoundError;
 use Icinga\Module\Vola\ColumnsIniRepository;
+use Icinga\Module\Vola\Forms\ColumnForm;
 use Icinga\Web\Controller;
 use Icinga\Web\Url;
 
@@ -38,6 +40,48 @@ class ColumnsController extends Controller
     }
 
     /**
+     * Create a column
+     */
+    public function newAction()
+    {
+        $form = $this->prepareForm()->add();
+        $form->handleRequest();
+        $this->renderForm($form, $this->translate('New Column'));
+    }
+
+    /**
+     * Update a column
+     */
+    public function updateAction()
+    {
+        $form = $this->prepareForm()->edit($this->params->getRequired('name'));
+
+        try {
+            $form->handleRequest();
+        } catch (NotFoundError $_) {
+            $this->httpNotFound($this->translate('Column not found'));
+        }
+
+        $this->renderForm($form, $this->translate('Update Column'));
+    }
+
+    /**
+     * Remove a column
+     */
+    public function removeAction()
+    {
+        $form = $this->prepareForm()->remove($this->params->getRequired('name'));
+
+        try {
+            $form->handleRequest();
+        } catch (NotFoundError $_) {
+            $this->httpNotFound($this->translate('Column not found'));
+        }
+
+        $this->renderForm($form, $this->translate('Remove Column'));
+    }
+
+    /**
      * @return ColumnsIniRepository
      */
     protected function getRepo()
@@ -45,5 +89,19 @@ class ColumnsController extends Controller
         $ds = $this->Config('columns');
         $ds->getConfigObject()->setKeyColumn('name');
         return new ColumnsIniRepository($ds);
+    }
+
+    /**
+     * Assert permission and return a prepared ColumnForm
+     *
+     * @return ColumnForm
+     */
+    protected function prepareForm()
+    {
+        $this->assertPermission('config/modules');
+
+        return (new ColumnForm())
+            ->setRepository($this->getRepo())
+            ->setRedirectUrl(Url::fromPath('vola/columns'));
     }
 }
