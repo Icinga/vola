@@ -1,0 +1,46 @@
+# vola: Icinga Director random import | (c) 2020 Icinga GmbH | GPLv2+
+
+name: Tar ball
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  tarball:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout HEAD
+        uses: actions/checkout@v1
+
+      - name: Tar ball
+        run: |
+          set -exo pipefail
+          git archive --prefix=vola/ HEAD |tar -x
+          pushd vola
+          composer install --no-dev --ignore-platform-reqs
+          popd
+          tar -czf vola.tgz vola
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        with:
+          tag_name: '${{ github.ref }}'
+          release_name: '${{ github.ref }}'
+          draft: true
+          prerelease: false
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        with:
+          upload_url: '${{ steps.create_release.outputs.upload_url }}'
+          asset_path: ./vola.tgz
+          asset_name: vola.tgz
+          asset_content_type: application/gzip
